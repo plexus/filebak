@@ -1,1 +1,9 @@
-{:deps {com.lambdaisland/launchpad {:mvn/version "0.28.129-alpha"}}}
+{:paths ["src" "resources"]
+ :deps {com.lambdaisland/launchpad {:mvn/version "0.28.129-alpha"}
+        com.lambdaisland/cli         {:mvn/version "0.7.33"}
+        com.lambdaisland/shellutils  {:mvn/version "0.2.17"}
+        borkdude/rewrite-edn         {:mvn/version "0.4.7"}
+        com.lambdaisland/open-source {:git/url "https://github.com/lambdaisland/open-source"
+                                      :git/sha "a6d39720fe8948d79b822384de054ee6e1912599"}
+        babashka/tools.bbuild  {:git/url "https://github.com/babashka/tools.bbuild"
+                                :git/sha "f5a4acaf25ec2bc5582853758ba81383fff5e86b"}}}

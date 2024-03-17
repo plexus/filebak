@@ -1,0 +1,44 @@
+#!/usr/bin/env bb
+
+(require
+ '[clojure.core :as c]
+ '[clojure.java.io :as io]
+ '[clojure.java.shell :as shell]
+ '[clojure.pprint :as pprint]
+ '[clojure.pprint]
+ '[clojure.string :as str]
+ '[lioss.version :as version]
+ '[lambdaisland.cli :as cli]
+ '[lambdaisland.shellutils :as shutil]
+ '[clojure.tools.build.api :as build])
+
+(defn uberjar
+  "Build an uberjar in target/aviationglass.jar"
+  {:flags ["--target-dir" {:doc "Directory to build in"
+                           :default "target"}]}
+  [{:keys [target-dir]}]
+  (let [basis (build/create-basis {:project "deps.edn"})
+        version (version/read-version-string {})]
+    (spit "resources/filebak/version.edn" {:version version})
+
+    (build/copy-dir {:src-dirs   ["resources"]
+                     :target-dir target-dir})
+
+    (build/compile-clj {:basis     basis
+                        :src-dirs  ["src"]
+                        :class-dir target-dir})
+
+    (build/uber {:class-dir target-dir
+                 :uber-file "target/filebak.jar"
+                 :basis     basis
+                 :main      'casa.squid.filebak})))
+
+(def commands
+  ["uberjar" #'uberjar])
+
+(def flags
+  [])
+
+(cli/dispatch
+ {:commands commands
+  :flags flags})

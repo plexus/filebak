@@ -1,4 +1,5 @@
 (ns casa.squid.filebak
+  (:gen-class)
   (:require
    [camel-snake-kebab.core :as csk]
    [clojure.edn :as edn]
@@ -13,7 +14,8 @@
    [ring.adapter.jetty :as jetty]
    [ring.middleware.anti-forgery :as anti-forgery]
    [ring.middleware.basic-authentication :as basic-auth]
-   [ring.middleware.defaults :as ring-defaults]))
+   [ring.middleware.defaults :as ring-defaults]
+   [io.pedestal.log :as log]))
 
 (defonce settings (atom {:port 8080
                          :max-file-size (* 10 1024 1024)
@@ -74,6 +76,11 @@
 
 (defn index-html [{:keys [flash]}]
   [:html
+   [:head
+    [:meta {:charset "UTF-8"}]
+    [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
+    [:link {:rel "stylesheet" :type "text/css"} "resources/public/styles.css"]
+    [:title "Filebak"]]
    [:body
     [:h1 "Filebak"]
     (when flash
@@ -93,7 +100,8 @@
         [:tr
          [:td [:a {:href (str "/download/" uuid)}filename]]
          [:td (file-size-str size)]
-         [:td (time-str (expiration-time file))]])]]]])
+         [:td (time-str (expiration-time file))]])]]]]
+  )
 
 (defn ok [body]
   {:status 200
@@ -177,6 +185,7 @@
   (reset! files (if (.exists (metadata-file))
                   (edn/read-string (slurp (metadata-file)))
                   []))
+  (log/info :filebak/starting (select-keys @settings [:port :max-file-size :expiration-time :upload-dir]))
   (def jetty
     (jetty/run-jetty
      (fn [req] ((app) req))
