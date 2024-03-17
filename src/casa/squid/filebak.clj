@@ -210,14 +210,10 @@
    {:desc "Clean up files"}))
 
 (def flags
-  ["--port <port>" {:doc "HTTP port"
-                    :default (setting :port)}
-   "--max-file-size <bytes>" {:doc "Maximum allowed file size in bytes"
-                              :default (setting :max-file-size)}
-   "--upload-dir <path>" {:doc "Directory where to place uploaded files"
-                          :default (setting :upload-dir)}
-   "--expiration-time <sec>" {:doc "Time after which uploaded files are removed, in seconds"
-                              :default (setting :expiration-time)}
+  ["--port <port>" {:doc "HTTP port"}
+   "--max-file-size <bytes>" {:doc "Maximum allowed file size in bytes"}
+   "--upload-dir <path>" {:doc "Directory where to place uploaded files"}
+   "--expiration-time <sec>" {:doc "Time after which uploaded files are removed, in seconds"}
    "--basic-auth-username <user>" {:doc "Username for HTTP basic auth"}
    "--basic-auth-password <password>" {:doc "Password for HTTP basic auth"}])
 
