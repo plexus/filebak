@@ -2,9 +2,9 @@ FROM clojure:tools-deps AS builder
 
 WORKDIR /
 
-RUN git clone https://github.com/plexus/filebak
 RUN apt-get update && apt-get install -y curl
 RUN curl -sL https://raw.githubusercontent.com/lambdaisland/open-source/main/bin/install_babashka | sh -s -- /usr/bin
+RUN git clone https://github.com/plexus/filebak
 RUN cd filebak && bin/dev uberjar
 CMD clojure -M -m casa.squid.filebak --upload-dir /uploads
 
