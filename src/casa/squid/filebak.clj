@@ -54,7 +54,7 @@
     (str n " seconds")
     (= 1 (Math/round (double (/ n 60))))
     (str "1 minute")
-    (< n (* 58 60))
+    (< n (* 60 60))
     (str (Math/round (double (/ n 60))) " minutes")
     (= 1 (long (Math/floor (double (/ n 60 60)))))
     (str "1 hour"
