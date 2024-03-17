@@ -103,8 +103,7 @@
         [:tr
          [:td [:a {:href (str "/download/" uuid)}filename]]
          [:td (file-size-str size)]
-         [:td (time-str (expiration-time file))]])]]]]
-  )
+         [:td (time-str (expiration-time file))]])]]]])
 
 (defn ok [body]
   {:status 200
@@ -185,6 +184,7 @@
    (comp keyword str/lower-case csk/->kebab-case #(str/replace % #"^FILEBAK_" ""))))
 
 (defn start-server! [opts]
+  (pprint/pprint opts)
   (swap! settings merge opts)
   (reset! files (if (.exists (metadata-file))
                   (edn/read-string (slurp (metadata-file)))
@@ -209,16 +209,16 @@
    {:desc "Clean up files"}))
 
 (def flags
-  ["--port" {:doc "HTTP port"
-             :default (setting :port)}
-   "--max-file-size" {:doc "Maximum allowed file size in bytes"
-                      :default (setting :max-file-size)}
-   "--upload-dir" {:doc "Directory where to place uploaded files"
-                   :default (setting :upload-dir)}
-   "--expiration-time" {:doc "Time after which uploaded files are removed, in seconds"
-                        :default (setting :expiration-time)}
-   "--basic-auth-username" {:doc "Username for HTTP basic auth"}
-   "--basic-auth-password" {:doc "Password for HTTP basic auth"}])
+  ["--port <port>" {:doc "HTTP port"
+                    :default (setting :port)}
+   "--max-file-size <bytes>" {:doc "Maximum allowed file size in bytes"
+                              :default (setting :max-file-size)}
+   "--upload-dir <path>" {:doc "Directory where to place uploaded files"
+                          :default (setting :upload-dir)}
+   "--expiration-time <sec>" {:doc "Time after which uploaded files are removed, in seconds"
+                              :default (setting :expiration-time)}
+   "--basic-auth-username <user>" {:doc "Username for HTTP basic auth"}
+   "--basic-auth-password <password>" {:doc "Password for HTTP basic auth"}])
 
 (def doc
   "Allow files to be uploaded and downloaded, after a fixed amount of time they
@@ -236,8 +236,7 @@ are removed again. Optionally provides HTTP basic auth.")
     :command #'command
     :flags flags
     :init (settings-from-env)}
-   args)
-  )
+   args))
 
 (comment
   (swap! settings merge (settings-from-env))
