@@ -25,6 +25,8 @@ Flags
 
 Setting either a username or password will enable basic auth.
 
+![screenshot of filebak](./screenshot.png)
+
 ## License
 
 Copyright &copy; 2020 Arne Brasseur and Contributors
