@@ -184,6 +184,7 @@
    (comp keyword str/lower-case csk/->kebab-case #(str/replace % #"^FILEBAK_" ""))))
 
 (defn start-server! [opts]
+  (pprint/pprint (into {} (System/getenv)))
   (pprint/pprint opts)
   (swap! settings merge opts)
   (reset! files (if (.exists (metadata-file))
