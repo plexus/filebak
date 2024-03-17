@@ -79,7 +79,7 @@
    [:head
     [:meta {:charset "UTF-8"}]
     [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-    [:link {:rel "stylesheet" :type "text/css"} "resources/public/styles.css"]
+    [:link {:rel "stylesheet" :type "text/css" :href "styles.css"}]
     [:title "Filebak"]]
    [:body
     [:h1 "Filebak"]
@@ -87,7 +87,6 @@
       [:div#flash flash])
     [:form
      {:action "/upload" :method "post" :enctype "multipart/form-data"}
-     [:label {:for "file"} "File"]
      [:input#file {:name "file" :type "file"}]
      [:input {:name "__anti-forgery-token" :type "hidden" :value anti-forgery/*anti-forgery-token*}]
      [:button "Upload"]]
@@ -154,7 +153,8 @@
 (defn routes []
   [["/" {:get {:handler #'index}}]
    ["/upload" {:post {:handler #'upload}}]
-   ["/download/:uuid" {:get {:handler #'download}}]])
+   ["/download/:uuid" {:get {:handler #'download}}]
+   ["/styles.css" {:get (fn [_] {:status 200 :content-type "text/css" :body (io/resource "public/styles.css")})}]])
 
 (def middleware [[ring-defaults/wrap-defaults ring-defaults/site-defaults]])
 
@@ -180,7 +180,7 @@
     {:vars (into {} (System/getenv))})
    (comp keyword str/lower-case csk/->kebab-case #(str/replace % #"^FILEBAK_" ""))))
 
-(defn start! [opts]
+(defn start-server! [opts]
   (swap! settings merge opts)
   (reset! files (if (.exists (metadata-file))
                   (edn/read-string (slurp (metadata-file)))
@@ -190,7 +190,9 @@
     (jetty/run-jetty
      (fn [req] ((app) req))
      {:port (Integer. (setting :port))
-      :join? false}))
+      :join? false})))
+
+(defn start-clean-task! [opts]
   (at/interspaced
    1000
    (fn []
@@ -200,8 +202,7 @@
                       (.delete (io/file (:location f))))
                     (remove expired? files))))
    at-pool
-   {:desc "Clean up files"})
-  @(promise))
+   {:desc "Clean up files"}))
 
 (def flags
   ["--port" {:doc "HTTP port"
@@ -219,11 +220,16 @@
   "Allow files to be uploaded and downloaded, after a fixed amount of time they
 are removed again. Optionally provides HTTP basic auth.")
 
+(defn command [opts]
+  (start-server! opts)
+  (start-clean-task! opts)
+  @(promise))
+
 (defn -main [& args]
   (cli/dispatch
    {:name "filebak"
     :doc doc
-    :command #'start!
+    :command #'command
     :flags flags
     :init (settings-from-env)}
    args)

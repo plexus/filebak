@@ -12,3 +12,5 @@ resources/public/ui
 .store
 out
 .#*
+files.edn
+deps.local.edn
