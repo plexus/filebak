@@ -95,6 +95,10 @@
       [:tr
        [:th "Filename"] [:th "Size"] [:th "Expires in"]]]
      [:tbody
+      (when (not (seq @files))
+        [:tr
+         [:td#empty-message {:colspan 3}
+          "No files available for download"]])
       (for [{:keys [filename content-type uuid size location upload-time] :as file} @files]
         [:tr
          [:td [:a {:href (str "/download/" uuid)}filename]]
