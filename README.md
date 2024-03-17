@@ -29,7 +29,7 @@ Setting either a username or password will enable basic auth.
 
 ## License
 
-Copyright &copy; 2020 Arne Brasseur and Contributors
+Copyright &copy; 2024 Arne Brasseur and Contributors
 
 Licensed under the term of the Mozilla Public License 2.0, see LICENSE.
 
