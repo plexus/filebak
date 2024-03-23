@@ -135,10 +135,17 @@
 
 (defn upload [{:keys [params] :as req}]
   (let [{:keys [filename tempfile size]} (:file params)]
-    (if (< (setting :max-file-size) size)
+    (cond
+      (= 0 size)
+      (do
+        (.delete tempfile)
+        (redirect-home "Empty file, nothing uploaded"))
+
+      (< (setting :max-file-size) size)
       (do
         (.delete tempfile)
         (redirect-home (str "File size too large, max size " (file-size-str (setting :max-file-size)))))
+      :else
       (do
         (handle-upload! (:file params))
         (redirect-home (str "File " filename " uploaded"))))))
@@ -157,7 +164,8 @@
   [["/" {:get {:handler #'index}}]
    ["/upload" {:post {:handler #'upload}}]
    ["/download/:uuid" {:get {:handler #'download}}]
-   ["/styles.css" {:get (fn [_] {:status 200 :content-type "text/css" :body (io/resource "public/styles.css")})}]])
+   ["/styles.css" {:get (fn [_] {:status 200 :content-type "text/css" :body (io/resource "public/styles.css")})}]
+   ["/favicon.ico" {:get (constantly {:status 404})}]])
 
 (def middleware [[ring-defaults/wrap-defaults ring-defaults/site-defaults]])
 
@@ -237,6 +245,7 @@ are removed again. Optionally provides HTTP basic auth.")
 
 (comment
   (swap! settings merge (settings-from-env))
-  (start! (settings-from-env))
+  (start-server! (settings-from-env))
   (.stop jetty)
+  (clojure.java.browse/browse-url (str "http://localhost:" (setting :port)))
   )
