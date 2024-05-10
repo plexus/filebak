@@ -15,7 +15,8 @@
    [ring.middleware.anti-forgery :as anti-forgery]
    [ring.middleware.basic-authentication :as basic-auth]
    [ring.middleware.defaults :as ring-defaults]
-   [io.pedestal.log :as log]))
+   [io.pedestal.log :as log]
+   [charred.api :as json]))
 
 (defonce settings (atom {:port 8080
                          :max-file-size (* 10 1024 1024)
@@ -74,18 +75,45 @@
 (defn expired? [file]
   (<= (expiration-time file) 0))
 
+(defn file-table-row [{:keys [filename content-type uuid size location upload-time] :as file}]
+  [:tr.file-table-row
+   [:td
+    [:a {:href (str "/file/" uuid "/download")
+         :title content-type} filename]
+    [:div.buttons
+     [:button {:hx-get (str "/file/" uuid "/edit")
+               :hx-target "closest tr"
+               :hx-swap "outerHTML"} "Edit"]
+     [:button {:hx-delete (str "/file/" uuid)
+               :hx-target "closest tr"} "Delete"]]]
+   [:td (file-size-str size)]
+   [:td (time-str (expiration-time file))]])
+
+(defn file-edit-row [{:keys [filename content-type uuid size location upload-time] :as file}]
+  [:tr.file-table-row
+   [:td
+    [:form {:hx-put (str "/file/" uuid)
+            :hx-target "closest tr"
+            :hx-swap "outerHTML"}
+     [:input {:name "filename" :value filename :placeholder filename}]
+     [:div.buttons
+      [:button "Save"]]]]
+   [:td (file-size-str size)]
+   [:td (time-str (expiration-time file))]])
+
 (defn index-html [{:keys [flash]}]
-  [:html
+  [:html {:hx-headers (json/write-json-str {:X-CSRF-Token anti-forgery/*anti-forgery-token*})}
    [:head
     [:meta {:charset "UTF-8"}]
     [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
     [:link {:rel "stylesheet" :type "text/css" :href "styles.css"}]
+    [:script {:src "htmx-1.9.12.js"}]
     [:title "Filebak"]]
    [:body
     [:h1 "Filebak"]
     (when flash
       [:div#flash flash])
-    [:form
+    [:form.upload
      {:action "/upload" :method "post" :enctype "multipart/form-data"}
      [:input#file {:name "file" :type "file"}]
      [:input {:name "__anti-forgery-token" :type "hidden" :value anti-forgery/*anti-forgery-token*}]
@@ -99,11 +127,8 @@
         [:tr
          [:td#empty-message {:colspan 3}
           "No files available for download"]])
-      (for [{:keys [filename content-type uuid size location upload-time] :as file} @files]
-        [:tr
-         [:td [:a {:href (str "/download/" uuid)}filename]]
-         [:td (file-size-str size)]
-         [:td (time-str (expiration-time file))]])]]]])
+      (for [f @files]
+        [file-table-row f])]]]])
 
 (defn ok [body]
   {:status 200
@@ -150,22 +175,53 @@
         (handle-upload! (:file params))
         (redirect-home (str "File " filename " uploaded"))))))
 
-(defn download [{:keys [path-params] :as req}]
-  (when-let [file (some #(when (= (:uuid %) (:uuid path-params))
-                           %)
-                        @files)]
+(defn find-file [uuid]
+  (some #(when (= (:uuid %) uuid)
+           %)
+        @files))
+
+(defn download-file [{:keys [path-params] :as req}]
+  (when-let [file (find-file (:uuid path-params))]
     {:status 200
      :headers
      {"content-type" (:content-type file)
       "content-disposition" (str "attachment; filename=" (pr-str (:filename file)))}
      :body (io/file (:location file))}))
 
+(defn delete-file [{:keys [path-params] :as req}]
+  (let [uuid (:uuid path-params)]
+    (if-let [file (find-file uuid)]
+      (do
+        (.delete (io/file (:location file)))
+        (swap! files (partial remove (comp #{uuid} :uuid)))
+        (ok [:td {:colspan 4} "Deleted " (:filename file)]))
+      (ok [:td {:colspan 4} "Not found"]))))
+
+(defn edit-form [{:keys [path-params] :as req}]
+  (let [uuid (:uuid path-params)]
+    (if-let [file (find-file uuid)]
+      (ok [file-edit-row file])
+      (ok [:td {:colspan 4} "Not found"]))))
+
+(defn update-file [{:keys [path-params form-params] :as req}]
+  (let [uuid (:uuid path-params)]
+    (if-let [file (find-file uuid)]
+      (do
+        (swap! files (partial map (fn [f]
+                                    (if (= uuid (:uuid f))
+                                      (assoc f :filename (get form-params "filename"))
+                                      f))))
+        (ok [file-table-row (find-file uuid)]))
+      (ok [:td {:colspan 4} "Not found"]))))
+
 (defn routes []
   [["/" {:get {:handler #'index}}]
    ["/upload" {:post {:handler #'upload}}]
-   ["/download/:uuid" {:get {:handler #'download}}]
-   ["/styles.css" {:get (fn [_] {:status 200 :content-type "text/css" :body (io/resource "public/styles.css")})}]
-   ["/favicon.ico" {:get (constantly {:status 404})}]])
+   ["/file/:uuid"
+    ["" {:put {:handler #'update-file}
+         :delete {:handler #'delete-file}}]
+    ["/edit" {:get {:handler #'edit-form}}]
+    ["/download" {:get {:handler #'download-file}}]]])
 
 (def middleware [[ring-defaults/wrap-defaults ring-defaults/site-defaults]])
 
@@ -173,13 +229,18 @@
   (ring/ring-handler
    (ring/router
     (routes)
-    {:data {:middleware (cond-> middleware
-                          (or (setting :basic-auth-username)
-                              (setting :basic-auth-password))
-                          (conj [basic-auth/wrap-basic-authentication
-                                 (fn [u p]
-                                   (= u (str (setting :basic-auth-username)))
-                                   (= p (str (setting :basic-auth-password))))]))}})))
+    {:data {}})
+   (fn [req]
+     {:status 404
+      :headers {"content-type" "text/html"}
+      :body (hiccup/render [:h1 "404 Not Found"])})
+   {:middleware (cond-> middleware
+                  (or (setting :basic-auth-username)
+                      (setting :basic-auth-password))
+                  (conj [basic-auth/wrap-basic-authentication
+                         (fn [u p]
+                           (= u (str (setting :basic-auth-username)))
+                           (= p (str (setting :basic-auth-password))))]))}))
 
 (defn settings-from-env []
   (update-keys

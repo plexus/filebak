@@ -4,7 +4,7 @@ body {
   font-size: 1.2rem;
 }
 
-form {
+form.upload {
   border: 3px solid hsla(0, 80%, 75%);
   border-radius: 5px;
   padding: 16px;
@@ -57,8 +57,13 @@ th:not(:first-child), td:not(:first-child) {
 a {
  color: hsla(200, 80%, 30%);
 }
+
 #empty-message {
 text-align: center;
 padding: 1.5rem;
 font-size: 1.5em;
+}
+
+.file-table-row .buttons {
+  float: right;
 }

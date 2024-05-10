@@ -1,56 +1,14 @@
-({:filename "dagobert.gif",
+({:filename "xxxy.jpg",
   :content-type "image/gif",
   :size 1708090,
-  :uuid "e5395a84-b0d4-40cc-a732-6be2047b2eaf",
+  :uuid "eb6b2c56-5b8d-4206-9f58-d4c4d79ec410",
   :location
-  "/home/arne/clj-projects/filebak/e5395a84-b0d4-40cc-a732-6be2047b2eaf",
-  :upload-time 1710682723}
- {:filename "wednesday.jpeg",
-  :content-type "image/jpeg",
-  :size 47273,
-  :uuid "66c8e55a-3fa8-419b-9b59-daf1319485e0",
-  :location
-  "/home/arne/clj-projects/filebak/66c8e55a-3fa8-419b-9b59-daf1319485e0",
-  :upload-time 1710682701}
- {:filename "hat_off.gif",
-  :content-type "image/gif",
-  :size 580502,
-  :uuid "a19ddbae-81c9-44f7-98f9-2bb6cfefedbc",
-  :location
-  "/home/arne/clj-projects/filebak/a19ddbae-81c9-44f7-98f9-2bb6cfefedbc",
-  :upload-time 1710682676}
- {:filename "kostuum-puntzak-friet.jpg",
+  "/home/arne/clj-projects/filebak/eb6b2c56-5b8d-4206-9f58-d4c4d79ec410",
+  :upload-time 1715351066}
+ {:filename "kostuum-puntzaxxxk-friet.jpg2",
   :content-type "image/jpeg",
   :size 63883,
-  :uuid "d703104f-0540-45a8-9fba-64bf18074d85",
+  :uuid "b055aac0-43bc-43fa-bad9-2b20ba9ce70d",
   :location
-  "/home/arne/clj-projects/filebak/d703104f-0540-45a8-9fba-64bf18074d85",
-  :upload-time 1710682656}
- {:filename "bmo.gif",
-  :content-type "image/gif",
-  :size 35175,
-  :uuid "0f78c9ec-f103-4171-aa32-5976f779e6b6",
-  :location
-  "/home/arne/clj-projects/filebak/0f78c9ec-f103-4171-aa32-5976f779e6b6",
-  :upload-time 1710682334}
- {:filename "secrets.edn",
-  :content-type "application/octet-stream",
-  :size 2637,
-  :uuid "4c21280e-c1dc-43db-a4a3-2636f8721252",
-  :location
-  "/home/arne/clj-projects/filebak/4c21280e-c1dc-43db-a4a3-2636f8721252",
-  :upload-time 1710682257}
- {:filename "old_prod_config.edn",
-  :content-type "application/octet-stream",
-  :size 2274,
-  :uuid "2e5244cd-ac2e-4540-83a1-2a2f3bc5b1e7",
-  :location
-  "/home/arne/clj-projects/filebak/2e5244cd-ac2e-4540-83a1-2a2f3bc5b1e7",
-  :upload-time 1710682167}
- {:filename "",
-  :content-type "application/octet-stream",
-  :size 0,
-  :uuid "4bb98ac1-0cc8-4e8e-8ab0-4e7060549864",
-  :location
-  "/home/arne/clj-projects/filebak/4bb98ac1-0cc8-4e8e-8ab0-4e7060549864",
-  :upload-time 1710682157})
+  "/home/arne/clj-projects/filebak/b055aac0-43bc-43fa-bad9-2b20ba9ce70d",
+  :upload-time 1715350474})
