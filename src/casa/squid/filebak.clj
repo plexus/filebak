@@ -83,7 +83,7 @@
     [:div.buttons
      [:button {:hx-get (str "/file/" uuid "/edit")
                :hx-target "closest tr"
-               :hx-swap "outerHTML"} "Edit"]
+               :hx-swap "outerHTML"} "Rename"]
      [:button {:hx-delete (str "/file/" uuid)
                :hx-target "closest tr"} "Delete"]]]
    [:td (file-size-str size)]
