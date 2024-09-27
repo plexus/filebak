@@ -166,10 +166,10 @@
         (.delete tempfile)
         (redirect-home "Empty file, nothing uploaded"))
 
-      (< (setting :max-file-size) size)
+      (< (Integer. (setting :max-file-size)) size)
       (do
         (.delete tempfile)
-        (redirect-home (str "File size too large, max size " (file-size-str (setting :max-file-size)))))
+        (redirect-home (str "File size too large, max size " (file-size-str (Integer. (setting :max-file-size))))))
       :else
       (do
         (handle-upload! (:file params))
@@ -306,7 +306,8 @@ are removed again. Optionally provides HTTP basic auth.")
 
 (comment
   (swap! settings merge (settings-from-env))
-  (start-server! (settings-from-env))
+  (start-server! (assoc (settings-from-env) :port 8090))
+  (start-clean-task! (settings-from-env))
   (.stop jetty)
-  (clojure.java.browse/browse-url (str "http://localhost:" (setting :port)))
+  (clojure.java.browse/browse-url (str "http://localhost:8090" #_(setting :port)))
   )

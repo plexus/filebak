@@ -1,14 +1,1 @@
-({:filename "xxxy.jpg",
-  :content-type "image/gif",
-  :size 1708090,
-  :uuid "eb6b2c56-5b8d-4206-9f58-d4c4d79ec410",
-  :location
-  "/home/arne/clj-projects/filebak/eb6b2c56-5b8d-4206-9f58-d4c4d79ec410",
-  :upload-time 1715351066}
- {:filename "kostuum-puntzaxxxk-friet.jpg2",
-  :content-type "image/jpeg",
-  :size 63883,
-  :uuid "b055aac0-43bc-43fa-bad9-2b20ba9ce70d",
-  :location
-  "/home/arne/clj-projects/filebak/b055aac0-43bc-43fa-bad9-2b20ba9ce70d",
-  :upload-time 1715350474})
+()
