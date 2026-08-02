@@ -27,9 +27,13 @@ Setting either a username or password will enable basic auth.
 
 ![screenshot of filebak](./screenshot.png)
 
+Settings can also be set via env var, `FILEBAK_PORT`, `FILEBAK_MAX_FILE_SIZE`, etc.
+
+Docker image: `lambdaisland/filebak:latest`
+
 ## License
 
-Copyright &copy; 2024 Arne Brasseur and Contributors
+Copyright &copy; 2024-2026 Arne Brasseur and Contributors
 
 Licensed under the term of the Mozilla Public License 2.0, see LICENSE.
 
