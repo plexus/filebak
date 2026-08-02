@@ -31,6 +31,14 @@ Settings can also be set via env var, `FILEBAK_PORT`, `FILEBAK_MAX_FILE_SIZE`, e
 
 Docker image: `lambdaisland/filebak:latest`
 
+## Build & Release
+
+```
+VERSION=v2
+docker build -t lambdaisland/filebak:$VERSION .
+docker push lambdaisland/filebak:$VERSION
+```
+
 ## License
 
 Copyright &copy; 2024-2026 Arne Brasseur and Contributors
