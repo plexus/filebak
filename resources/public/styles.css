@@ -5,6 +5,7 @@ body {
 }
 
 form.upload {
+  max-width: 35rem;
   border: 3px solid hsla(0, 80%, 75%);
   border-radius: 5px;
   padding: 16px;
@@ -19,7 +20,7 @@ form.upload {
 }
 
 body {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 1em;
 }
@@ -52,6 +53,7 @@ th:not(:first-child), td:not(:first-child) {
   padding: 16px;
   background-color: hsla(200, 50%, 70%);
   margin-bottom: 32px;
+  overflow: hidden;
 }
 
 a {
@@ -66,4 +68,9 @@ font-size: 1.5em;
 
 .file-table-row .buttons {
   float: right;
+}
+
+pre {
+  display: inline;
+  word-wrap: anywhere;
 }

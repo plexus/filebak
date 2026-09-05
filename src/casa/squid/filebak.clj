@@ -115,7 +115,7 @@
       [:div#flash flash])
     [:form.upload
      {:action "/upload" :method "post" :enctype "multipart/form-data"}
-     [:input#file {:name "file" :type "file"}]
+     [:input#file {:name "file" :type "file" :multiple "multiple"}]
      [:input {:name "__anti-forgery-token" :type "hidden" :value anti-forgery/*anti-forgery-token*}]
      [:button "Upload"]]
     [:table
@@ -159,21 +159,28 @@
                        :upload-time (epoch-now)})))
 
 (defn upload [{:keys [params] :as req}]
-  (let [{:keys [filename tempfile size]} (:file params)]
-    (cond
-      (= 0 size)
-      (do
-        (.delete tempfile)
-        (redirect-home "Empty file, nothing uploaded"))
+  (def params params)
+  (redirect-home
+   [:ul
+    (for [{:keys [filename tempfile size]
+           :as upload} (if (vector? (:file params)) (:file params) [(:file params)])]
+      [:li
+       (cond
+         (= 0 size)
+         (do
+           (.delete tempfile)
+           [:<> "Failed: " [:pre filename] ", empty file, nothing uploaded"])
 
-      (< (Integer. (setting :max-file-size)) size)
-      (do
-        (.delete tempfile)
-        (redirect-home (str "File size too large, max size " (file-size-str (Integer. (setting :max-file-size))))))
-      :else
-      (do
-        (handle-upload! (:file params))
-        (redirect-home (str "File " filename " uploaded"))))))
+         (< (Integer. (setting :max-file-size)) size)
+         (do
+           (.delete tempfile)
+           [:<>
+            "Failed: " [:pre filename] ", file size too large, max size " (file-size-str (Integer. (setting :max-file-size)))])
+         :else
+         (do
+           (handle-upload! upload)
+           [:<>
+            "OK: " [:pre filename] " uploaded"]))])]))
 
 (defn find-file [uuid]
   (some #(when (= (:uuid %) uuid)
