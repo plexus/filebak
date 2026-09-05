@@ -112,7 +112,10 @@
    [:body
     [:h1 "Filebak"]
     (when flash
-      [:div#flash flash])
+      [:div#flash
+       [:ul
+        (for [f flash]
+          [:li f])]])
     [:form.upload
      {:action "/upload" :method "post" :enctype "multipart/form-data"}
      [:input#file {:name "file" :type "file" :multiple "multiple"}]
@@ -142,7 +145,7 @@
   ([message]
    {:status 303
     :headers {"Location" "/"}
-    #_#_:flash message}))
+    :flash message}))
 
 (defn index [req]
   (ok (index-html {:flash (:flash req)})))
@@ -161,26 +164,23 @@
 
 (defn upload [{:keys [params] :as req}]
   (redirect-home
-   [:ul
-    (doall
-     (for [{:keys [filename tempfile size]
-            :as upload} (if (vector? (:file params)) (:file params) [(:file params)])]
-       [:li
-        (cond
-          (= 0 size)
-          (do
-            (.delete tempfile)
-            [:<> "Failed: " [:pre filename] ", empty file, nothing uploaded"])
+   (into []
+         (for [{:keys [filename tempfile size]
+                :as upload} (if (vector? (:file params)) (:file params) [(:file params)])]
+           (cond
+             (= 0 size)
+             (do
+               (.delete tempfile)
+               (str "Failed: " filename ", empty file, nothing uploaded"))
 
-          (< (Integer. (setting :max-file-size)) size)
-          (do
-            (.delete tempfile)
-            [:<>
-             "Failed: " [:pre filename] ", file size too large, max size " (file-size-str (Integer. (setting :max-file-size)))])
-          :else
-          (do
-            (handle-upload! upload)
-            [:<> "OK: " [:pre filename] " uploaded"]))]))]))
+             (< (Integer. (setting :max-file-size)) size)
+             (do
+               (.delete tempfile)
+               (str "Failed: " filename ", file size too large, max size " (file-size-str (Integer. (setting :max-file-size)))))
+             :else
+             (do
+               (handle-upload! upload)
+               (str "OK: " filename " uploaded")))))))
 
 (defn find-file [uuid]
   (some #(when (= (:uuid %) uuid)
