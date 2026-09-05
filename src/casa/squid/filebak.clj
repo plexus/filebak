@@ -142,46 +142,45 @@
   ([message]
    {:status 303
     :headers {"Location" "/"}
-    :flash message}))
+    #_#_:flash message}))
 
 (defn index [req]
   (ok (index-html {:flash (:flash req)})))
 
 (defn handle-upload! [{:keys [filename content-type tempfile size] :as upload}]
-  (let [uuid (str (random-uuid))
-        target (io/file (setting :upload-dir) uuid)
-        rename-ok? (.renameTo tempfile target)]
-    (println `handle-upload! upload :target target :rename-ok? rename-ok?)
-    (when rename-ok?
-      (swap! files conj {:filename filename
-                         :content-type content-type
-                         :size size
-                         :uuid uuid
-                         :location (.getCanonicalPath target)
-                         :upload-time (epoch-now)}))
-    rename-ok?))
+  (let [uuid       (str (random-uuid))
+        target     (io/file (setting :upload-dir) uuid)]
+    (io/copy tempfile target)
+    (println `handle-upload! upload :target target)
+    (swap! files conj {:filename     filename
+                       :content-type content-type
+                       :size         size
+                       :uuid         uuid
+                       :location     (.getCanonicalPath target)
+                       :upload-time  (epoch-now)})))
 
 (defn upload [{:keys [params] :as req}]
   (redirect-home
    [:ul
-    (for [{:keys [filename tempfile size]
-           :as upload} (if (vector? (:file params)) (:file params) [(:file params)])]
-      [:li
-       (cond
-         (= 0 size)
-         (do
-           (.delete tempfile)
-           [:<> "Failed: " [:pre filename] ", empty file, nothing uploaded"])
+    (doall
+     (for [{:keys [filename tempfile size]
+            :as upload} (if (vector? (:file params)) (:file params) [(:file params)])]
+       [:li
+        (cond
+          (= 0 size)
+          (do
+            (.delete tempfile)
+            [:<> "Failed: " [:pre filename] ", empty file, nothing uploaded"])
 
-         (< (Integer. (setting :max-file-size)) size)
-         (do
-           (.delete tempfile)
-           [:<>
-            "Failed: " [:pre filename] ", file size too large, max size " (file-size-str (Integer. (setting :max-file-size)))])
-         :else
-         (if (handle-upload! upload)
-           [:<> "OK: " [:pre filename] " uploaded"]
-           [:<> "Failed: " [:pre filename] " handle-upload! failed"]))])]))
+          (< (Integer. (setting :max-file-size)) size)
+          (do
+            (.delete tempfile)
+            [:<>
+             "Failed: " [:pre filename] ", file size too large, max size " (file-size-str (Integer. (setting :max-file-size)))])
+          :else
+          (do
+            (handle-upload! upload)
+            [:<> "OK: " [:pre filename] " uploaded"]))]))]))
 
 (defn find-file [uuid]
   (some #(when (= (:uuid %) uuid)
@@ -231,7 +230,8 @@
     ["/edit" {:get {:handler #'edit-form}}]
     ["/download" {:get {:handler #'download-file}}]]])
 
-(def middleware [[ring-defaults/wrap-defaults ring-defaults/site-defaults]])
+(def middleware [[ring-defaults/wrap-defaults
+                  ring-defaults/site-defaults]])
 
 (defn app []
   (ring/ring-handler
@@ -270,7 +270,10 @@
   (log/info :filebak/starting (select-keys @settings [:port :max-file-size :expiration-time :upload-dir]))
   (def jetty
     (jetty/run-jetty
-     (fn [req] ((app) req))
+     (fn [req] (let [res ((app) req)]
+                 (def res res)
+                 (def req req)
+                 res))
      {:port (Integer. (setting :port))
       :join? false})))
 

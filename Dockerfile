@@ -10,7 +10,7 @@ RUN git clone https://github.com/plexus/filebak
 RUN cd filebak && bin/dev uberjar
 CMD clojure -M -m casa.squid.filebak --upload-dir /uploads
 
-FROM openjdk:17-slim-buster AS runtime
+FROM eclipse-temurin:25-noble AS runtime
 COPY --from=builder /filebak/target/filebak.jar /app.jar
 
 EXPOSE 8080
