@@ -147,19 +147,21 @@
 (defn index [req]
   (ok (index-html {:flash (:flash req)})))
 
-(defn handle-upload! [{:keys [filename content-type tempfile size]}]
+(defn handle-upload! [{:keys [filename content-type tempfile size] :as upload}]
   (let [uuid (str (random-uuid))
-        target (io/file (setting :upload-dir) uuid)]
-    (.renameTo tempfile target)
-    (swap! files conj {:filename filename
-                       :content-type content-type
-                       :size size
-                       :uuid uuid
-                       :location (.getCanonicalPath target)
-                       :upload-time (epoch-now)})))
+        target (io/file (setting :upload-dir) uuid)
+        rename-ok? (.renameTo tempfile target)]
+    (println `handle-upload! upload :target target :rename-ok? rename-ok?)
+    (when rename-ok?
+      (swap! files conj {:filename filename
+                         :content-type content-type
+                         :size size
+                         :uuid uuid
+                         :location (.getCanonicalPath target)
+                         :upload-time (epoch-now)}))
+    rename-ok?))
 
 (defn upload [{:keys [params] :as req}]
-  (def params params)
   (redirect-home
    [:ul
     (for [{:keys [filename tempfile size]
@@ -177,10 +179,9 @@
            [:<>
             "Failed: " [:pre filename] ", file size too large, max size " (file-size-str (Integer. (setting :max-file-size)))])
          :else
-         (do
-           (handle-upload! upload)
-           [:<>
-            "OK: " [:pre filename] " uploaded"]))])]))
+         (if (handle-upload! upload)
+           [:<> "OK: " [:pre filename] " uploaded"]
+           [:<> "Failed: " [:pre filename] " handle-upload! failed"]))])]))
 
 (defn find-file [uuid]
   (some #(when (= (:uuid %) uuid)
